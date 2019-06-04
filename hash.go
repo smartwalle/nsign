@@ -18,8 +18,12 @@ func NewHashSign(h crypto.Hash) *HashSign {
 
 func (this *HashSign) Sign(p url.Values, opts ...OptionFunc) (string, error) {
 	var src = EncodeValues(p, opts...)
+	return this.SignByte([]byte(src), opts...)
+}
+
+func (this *HashSign) SignByte(b []byte, opts ...OptionFunc) (string, error) {
 	var h = this.h.New()
-	if _, err := h.Write([]byte(src)); err != nil {
+	if _, err := h.Write([]byte(b)); err != nil {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
@@ -27,6 +31,17 @@ func (this *HashSign) Sign(p url.Values, opts ...OptionFunc) (string, error) {
 
 func (this *HashSign) Verify(p url.Values, sign string, opts ...OptionFunc) bool {
 	nSign, err := this.Sign(p, opts...)
+	if err != nil {
+		return false
+	}
+	if nSign == sign {
+		return true
+	}
+	return false
+}
+
+func (this *HashSign) VerifyByte(b []byte, sign string, opts ...OptionFunc) bool {
+	nSign, err := this.SignByte(b, opts...)
 	if err != nil {
 		return false
 	}

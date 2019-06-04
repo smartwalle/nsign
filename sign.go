@@ -14,9 +14,13 @@ type Signer interface {
 	// 2、将排序后的参数名及参数名使用等号进行连接，例如：a=10
 	// 3、将组合之后的参数使用&号进行连接，例如：a=10&b=20&c=30&c=31
 	// 4、把拼接好的字符串进行相应运算
-	Sign(form url.Values, opts ...OptionFunc) (string, error)
+	Sign(p url.Values, opts ...OptionFunc) (string, error)
 
-	Verify(form url.Values, sign string, opts ...OptionFunc) bool
+	SignByte(b []byte, opts ...OptionFunc) (string, error)
+
+	Verify(p url.Values, sign string, opts ...OptionFunc) bool
+
+	VerifyByte(b []byte, sign string, opts ...OptionFunc) bool
 }
 
 func EncodeValues(p url.Values, opts ...OptionFunc) string {
@@ -33,7 +37,7 @@ func EncodeValues(p url.Values, opts ...OptionFunc) string {
 	for _, k := range keys {
 		vs := p[k]
 		for _, v := range vs {
-			if v == "" {
+			if v = strings.TrimSpace(v); v == "" {
 				continue
 			}
 			if buf.Len() > 0 {
