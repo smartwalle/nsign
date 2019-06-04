@@ -1,8 +1,8 @@
 package sign4go
 
 import (
+	"bytes"
 	"crypto"
-	"encoding/hex"
 	"net/url"
 )
 
@@ -16,36 +16,36 @@ func NewHash(h crypto.Hash) Signer {
 	return hs
 }
 
-func (this *Hash) Sign(p url.Values, opts ...OptionFunc) (string, error) {
+func (this *Hash) Sign(p url.Values, opts ...OptionFunc) ([]byte, error) {
 	var src = EncodeValues(p, opts...)
 	return this.SignBytes([]byte(src), opts...)
 }
 
-func (this *Hash) SignBytes(b []byte, opts ...OptionFunc) (string, error) {
+func (this *Hash) SignBytes(b []byte, opts ...OptionFunc) ([]byte, error) {
 	var h = this.h.New()
 	if _, err := h.Write(b); err != nil {
-		return "", err
+		return nil, err
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return h.Sum(nil), nil
 }
 
-func (this *Hash) Verify(p url.Values, sign string, opts ...OptionFunc) bool {
+func (this *Hash) Verify(p url.Values, sign []byte, opts ...OptionFunc) bool {
 	nSign, err := this.Sign(p, opts...)
 	if err != nil {
 		return false
 	}
-	if nSign == sign {
+	if bytes.Compare(nSign, sign) == 0 {
 		return true
 	}
 	return false
 }
 
-func (this *Hash) VerifyBytes(b []byte, sign string, opts ...OptionFunc) bool {
+func (this *Hash) VerifyBytes(b []byte, sign []byte, opts ...OptionFunc) bool {
 	nSign, err := this.SignBytes(b, opts...)
 	if err != nil {
 		return false
 	}
-	if nSign == sign {
+	if bytes.Compare(nSign, sign) == 0 {
 		return true
 	}
 	return false
