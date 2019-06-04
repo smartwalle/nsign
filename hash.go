@@ -23,7 +23,7 @@ func (this *HashSign) Sign(p url.Values, opts ...OptionFunc) (string, error) {
 
 func (this *HashSign) SignByte(b []byte, opts ...OptionFunc) (string, error) {
 	var h = this.h.New()
-	if _, err := h.Write([]byte(b)); err != nil {
+	if _, err := h.Write(b); err != nil {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
