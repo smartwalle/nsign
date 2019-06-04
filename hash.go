@@ -6,22 +6,22 @@ import (
 	"net/url"
 )
 
-type HashSign struct {
+type Hash struct {
 	h crypto.Hash
 }
 
-func NewHashSign(h crypto.Hash) *HashSign {
-	var hs = &HashSign{}
+func NewHash(h crypto.Hash) Signer {
+	var hs = &Hash{}
 	hs.h = h
 	return hs
 }
 
-func (this *HashSign) Sign(p url.Values, opts ...OptionFunc) (string, error) {
+func (this *Hash) Sign(p url.Values, opts ...OptionFunc) (string, error) {
 	var src = EncodeValues(p, opts...)
-	return this.SignByte([]byte(src), opts...)
+	return this.SignBytes([]byte(src), opts...)
 }
 
-func (this *HashSign) SignByte(b []byte, opts ...OptionFunc) (string, error) {
+func (this *Hash) SignBytes(b []byte, opts ...OptionFunc) (string, error) {
 	var h = this.h.New()
 	if _, err := h.Write(b); err != nil {
 		return "", err
@@ -29,7 +29,7 @@ func (this *HashSign) SignByte(b []byte, opts ...OptionFunc) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func (this *HashSign) Verify(p url.Values, sign string, opts ...OptionFunc) bool {
+func (this *Hash) Verify(p url.Values, sign string, opts ...OptionFunc) bool {
 	nSign, err := this.Sign(p, opts...)
 	if err != nil {
 		return false
@@ -40,8 +40,8 @@ func (this *HashSign) Verify(p url.Values, sign string, opts ...OptionFunc) bool
 	return false
 }
 
-func (this *HashSign) VerifyByte(b []byte, sign string, opts ...OptionFunc) bool {
-	nSign, err := this.SignByte(b, opts...)
+func (this *Hash) VerifyBytes(b []byte, sign string, opts ...OptionFunc) bool {
+	nSign, err := this.SignBytes(b, opts...)
 	if err != nil {
 		return false
 	}

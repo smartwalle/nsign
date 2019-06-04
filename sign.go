@@ -16,11 +16,11 @@ type Signer interface {
 	// 4、把拼接好的字符串进行相应运算
 	Sign(p url.Values, opts ...OptionFunc) (string, error)
 
-	SignByte(b []byte, opts ...OptionFunc) (string, error)
+	SignBytes(b []byte, opts ...OptionFunc) (string, error)
 
 	Verify(p url.Values, sign string, opts ...OptionFunc) bool
 
-	VerifyByte(b []byte, sign string, opts ...OptionFunc) bool
+	VerifyBytes(b []byte, sign string, opts ...OptionFunc) bool
 }
 
 func EncodeValues(p url.Values, opts ...OptionFunc) string {
