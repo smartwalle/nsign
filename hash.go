@@ -16,7 +16,7 @@ func NewHash(h crypto.Hash) Signer {
 	return hs
 }
 
-func (this *Hash) Sign(p url.Values, opts ...OptionFunc) ([]byte, error) {
+func (this *Hash) Sign(p url.Values, opts ...Option) ([]byte, error) {
 	var src = EncodeValues(p, opts...)
 	return this.SignBytes([]byte(src))
 }
@@ -29,7 +29,7 @@ func (this *Hash) SignBytes(b []byte) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func (this *Hash) Verify(p url.Values, sign []byte, opts ...OptionFunc) bool {
+func (this *Hash) Verify(p url.Values, sign []byte, opts ...Option) bool {
 	nSign, err := this.Sign(p, opts...)
 	if err != nil {
 		return false

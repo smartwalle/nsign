@@ -7,7 +7,6 @@ import (
 	_ "crypto/sha1"
 	"encoding/hex"
 	"net/url"
-	"strings"
 	"testing"
 )
 
@@ -18,9 +17,7 @@ func BenchmarkSign(b *testing.B) {
 		form.Set("c", "30")
 		form.Set("b", "20")
 		form.Set("a", "30")
-		_, _ = h.Sign(form, func(buf *strings.Builder) {
-			buf.WriteString("&" + "key=this_is_key")
-		})
+		_, _ = h.Sign(form)
 	}
 }
 

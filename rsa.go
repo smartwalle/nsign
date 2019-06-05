@@ -21,7 +21,7 @@ func NewRSA(h crypto.Hash, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey)
 	return hs
 }
 
-func (this *RSA) Sign(p url.Values, opts ...OptionFunc) ([]byte, error) {
+func (this *RSA) Sign(p url.Values, opts ...Option) ([]byte, error) {
 	var src = EncodeValues(p, opts...)
 	return this.SignBytes([]byte(src))
 }
@@ -35,7 +35,7 @@ func (this *RSA) SignBytes(b []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, this.privateKey, this.h, hashed)
 }
 
-func (this *RSA) Verify(p url.Values, sign []byte, opts ...OptionFunc) bool {
+func (this *RSA) Verify(p url.Values, sign []byte, opts ...Option) bool {
 	var src = EncodeValues(p, opts...)
 	return this.VerifyBytes([]byte(src), sign)
 }
