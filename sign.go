@@ -1,34 +1,143 @@
 package nsign
 
 import (
+	"crypto"
 	"net/url"
 )
 
-type Option func(b *Buffer)
+type Option func(sign *Sign)
 
-func WithPrefix(s string) Option {
-	return func(b *Buffer) {
-		b.prefix = s
+func WithSigner(signer Signer) Option {
+	return func(sign *Sign) {
+		if signer == nil {
+			return
+		}
+		sign.signer = signer
 	}
 }
 
-func WithSuffix(s string) Option {
-	return func(b *Buffer) {
-		b.suffix = s
+func WithEncoder(encoder Encoder) Option {
+	return func(sign *Sign) {
+		if encoder == nil {
+			return
+		}
+		sign.encoder = encoder
+	}
+}
+
+type SignOptionFunc func(opt *SignOption)
+
+type SignOption struct {
+	Prefix string
+	Suffix string
+}
+
+func WithPrefix(s string) SignOptionFunc {
+	return func(opt *SignOption) {
+		opt.Prefix = s
+	}
+}
+
+func WithSuffix(s string) SignOptionFunc {
+	return func(opt *SignOption) {
+		opt.Suffix = s
 	}
 }
 
 type Signer interface {
-	// SignValues
-	// 1、将参数名进行升序排序
-	// 2、将排序后的参数名及参数名使用等号进行连接，例如：a=10
-	// 3、将组合之后的参数使用&号进行连接，例如：a=10&b=20&c=30&c=31
-	// 4、把拼接好的字符串进行相应运算
-	SignValues(values url.Values, opts ...Option) ([]byte, error)
+	Sign(values []byte) ([]byte, error)
 
-	SignBytes(values []byte, opts ...Option) ([]byte, error)
+	Verify(values []byte, sign []byte) bool
+}
 
-	VerifyValues(values url.Values, sign []byte, opts ...Option) bool
+type Sign struct {
+	*BufferPool
+	signer  Signer
+	encoder Encoder
+}
 
-	VerifyBytes(values []byte, sign []byte, opts ...Option) bool
+func NewSign(opts ...Option) *Sign {
+	var s = &Sign{}
+	s.BufferPool = NewBufferPool()
+	s.signer = NewHashSigner(crypto.MD5)
+	s.encoder = &DefaultEncoder{}
+
+	for _, opt := range opts {
+		if opt != nil {
+			opt(s)
+		}
+	}
+	return s
+}
+
+func (this *Sign) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte, error) {
+	var buffer = this.GetBuffer()
+	defer buffer.Release()
+
+	var nOption = &SignOption{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(nOption)
+		}
+	}
+
+	var src, err = this.encoder.EncodeValues(buffer, values, nOption)
+	if err != nil {
+		return nil, err
+	}
+	return this.signer.Sign(src)
+}
+
+func (this *Sign) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, error) {
+	var buffer = this.GetBuffer()
+	defer buffer.Release()
+
+	var nOption = &SignOption{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(nOption)
+		}
+	}
+
+	var src, err = this.encoder.EncodeBytes(buffer, values, nOption)
+	if err != nil {
+		return nil, err
+	}
+	return this.signer.Sign(src)
+}
+
+func (this *Sign) VerifyValues(values url.Values, sign []byte, opts ...SignOptionFunc) bool {
+	var buffer = this.GetBuffer()
+	defer buffer.Release()
+
+	var nOption = &SignOption{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(nOption)
+		}
+	}
+
+	var src, err = this.encoder.EncodeValues(buffer, values, nOption)
+	if err != nil {
+		return false
+	}
+	return this.signer.Verify(src, sign)
+}
+
+func (this *Sign) VerifyBytes(values []byte, sign []byte, opts ...SignOptionFunc) bool {
+	var buffer = this.GetBuffer()
+	defer buffer.Release()
+
+	var nOption = &SignOption{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(nOption)
+		}
+	}
+
+	var src, err = this.encoder.EncodeBytes(buffer, values, nOption)
+	if err != nil {
+		return false
+	}
+	return this.signer.Verify(src, sign)
 }

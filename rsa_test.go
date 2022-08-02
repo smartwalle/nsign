@@ -53,7 +53,7 @@ func ParsePKCS1PublicKey(data []byte) (key *rsa.PublicKey, err error) {
 
 func init() {
 	var privStr = `
------BEGIN RSA PRIVATE KEY-----
+-----BEGIN RSASigner PRIVATE KEY-----
 MIIEpAIBAAKCAQEAttTw+Qwdmj8GfFvdMvoODllVIIertNXt/O6f5jUbIMlzXlHQ
 W6Yb60DmTMfFWqVXLBuhCfL+xiNb6JhMWFaFV+Rxh1OSFxiSB917VSxt7zrc/oU8
 UtKK/YtUXBES3XeeSaDfJPSx8u/oM2Q0L0b7kHTQdXixmzzdc3m23DnVv18Vaxol
@@ -79,7 +79,7 @@ Euq9mFRVT3aH9OJjgb7RgT37UG9uAhl4C5dcCdctMtM0kqi1N1CtPxWtDudfw3bX
 GdJtowKBgQDRwDe7CDlG3C3Sa/Tbvxq5RrRcNQC4vXHOsXVkGE1Now4oqFxP/ejp
 Ff0vOi7A/qDaFKR4wNY7rAO+I5ff4nwEufjXh28mkJKhMcJF0l/HIsbVQgAfxciB
 2cEf4Lm82omNYrbX/RsWz6Glxpz4DPejgTqyMH8sVGz+HmwqCcIHhA==
------END RSA PRIVATE KEY-----
+-----END RSASigner PRIVATE KEY-----
 `
 
 	var pubStr = `
@@ -99,7 +99,7 @@ WwIDAQAB
 }
 
 func TestRSA_SignBytes(t *testing.T) {
-	var h = nsign.NewRSA(crypto.SHA1, pri, pub)
+	var h = nsign.NewSign(nsign.WithSigner(nsign.NewRSASigner(crypto.SHA1, pri, pub)))
 
 	var src = "jsapi_ticket=sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg&noncestr=Wm3WZYTPz0wzccnW&timestamp=1414587457&url=http://mp.weixin.qq.com?params=value"
 	var rb, err = h.SignBytes([]byte(src))
@@ -114,7 +114,7 @@ func TestRSA_SignBytes(t *testing.T) {
 }
 
 func TestRSA_VerifyBytes(t *testing.T) {
-	var h = nsign.NewRSA(crypto.SHA1, pri, pub)
+	var h = nsign.NewSign(nsign.WithSigner(nsign.NewRSASigner(crypto.SHA1, pri, pub)))
 	var src = "jsapi_ticket=sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg&noncestr=Wm3WZYTPz0wzccnW&timestamp=1414587457&url=http://mp.weixin.qq.com?params=value"
 
 	var sb, _ = hex.DecodeString("727e2ae360c2db669703b473cbfb2c879e510f97c346b67a89b9c721b91506e4269383ad632fec8c1a0b2163312fb1d795ab7b2360108ec95e6976c073215e8f033791ccd35600206afd0e2728a29711c63ee6ef755d6b13c83d703c52b3a0f1f302f285318f2a3f82aa57fa031e665a2ee601d59ed63295c40472bd97f3216148d0f043e0c6e8bca079b34df47ac234dbdd9d99f5fcbda5e0723f82104c058d7a60e16c0e2d974908bb3c2bb96d6b6d67cc9470692ef74c80eb5292359b5e64183dace71a34a3aa532b010f9df44f9cc90e7b917aa4fac962964b744864a4c9ba3730c0f897dad71c5a7343a2c60a76e29cbcece4748597bdeab900197f5411")
@@ -125,7 +125,7 @@ func TestRSA_VerifyBytes(t *testing.T) {
 }
 
 func TestRSA_SignValues(t *testing.T) {
-	var h = nsign.NewRSA(crypto.SHA1, pri, pub)
+	var h = nsign.NewSign(nsign.WithSigner(nsign.NewRSASigner(crypto.SHA1, pri, pub)))
 	var p = url.Values{}
 	p.Add("jsapi_ticket", "sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg")
 	p.Add("noncestr", "Wm3WZYTPz0wzccnW")
@@ -144,7 +144,7 @@ func TestRSA_SignValues(t *testing.T) {
 }
 
 func TestRSA_VerifyValues(t *testing.T) {
-	var h = nsign.NewRSA(crypto.SHA1, pri, pub)
+	var h = nsign.NewSign(nsign.WithSigner(nsign.NewRSASigner(crypto.SHA1, pri, pub)))
 	var p = url.Values{}
 	p.Add("jsapi_ticket", "sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg")
 	p.Add("noncestr", "Wm3WZYTPz0wzccnW")

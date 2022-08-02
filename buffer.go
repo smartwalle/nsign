@@ -7,9 +7,7 @@ import (
 
 type Buffer struct {
 	*bytes.Buffer
-	p      *sync.Pool
-	prefix string
-	suffix string
+	p *sync.Pool
 }
 
 func NewBuffer() *Buffer {
@@ -20,8 +18,6 @@ func NewBuffer() *Buffer {
 
 func (this *Buffer) Reset() {
 	this.Buffer.Reset()
-	this.prefix = ""
-	this.suffix = ""
 }
 
 func (this *Buffer) Release() {

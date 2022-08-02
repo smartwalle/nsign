@@ -4,26 +4,23 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"net/url"
 )
 
-type RSA struct {
-	*BufferPool
+type RSASigner struct {
 	h          crypto.Hash
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
 }
 
-func NewRSA(h crypto.Hash, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) Signer {
-	var hs = &RSA{}
-	hs.BufferPool = NewBufferPool()
-	hs.h = h
-	hs.privateKey = privateKey
-	hs.publicKey = publicKey
-	return hs
+func NewRSASigner(h crypto.Hash, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) *RSASigner {
+	var nRSA = &RSASigner{}
+	nRSA.h = h
+	nRSA.privateKey = privateKey
+	nRSA.publicKey = publicKey
+	return nRSA
 }
 
-func (this *RSA) sign(values []byte) ([]byte, error) {
+func (this *RSASigner) Sign(values []byte) ([]byte, error) {
 	var h = this.h.New()
 	if _, err := h.Write(values); err != nil {
 		return nil, err
@@ -32,23 +29,7 @@ func (this *RSA) sign(values []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, this.privateKey, this.h, hashed)
 }
 
-func (this *RSA) SignValues(values url.Values, opts ...Option) ([]byte, error) {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
-
-	var src = encodeValues(buffer, values, opts...)
-	return this.sign(src)
-}
-
-func (this *RSA) SignBytes(values []byte, opts ...Option) ([]byte, error) {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
-
-	var src = encodeBytes(buffer, values, opts...)
-	return this.sign(src)
-}
-
-func (this *RSA) verify(values []byte, sign []byte) bool {
+func (this *RSASigner) Verify(values []byte, sign []byte) bool {
 	var h = this.h.New()
 	if _, err := h.Write(values); err != nil {
 		return false
@@ -59,20 +40,4 @@ func (this *RSA) verify(values []byte, sign []byte) bool {
 		return false
 	}
 	return true
-}
-
-func (this *RSA) VerifyValues(values url.Values, sign []byte, opts ...Option) bool {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
-
-	var src = encodeValues(buffer, values, opts...)
-	return this.verify(src, sign)
-}
-
-func (this *RSA) VerifyBytes(values []byte, sign []byte, opts ...Option) bool {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
-
-	var src = encodeBytes(buffer, values, opts...)
-	return this.verify(src, sign)
 }

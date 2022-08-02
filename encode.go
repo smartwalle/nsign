@@ -6,18 +6,26 @@ import (
 	"strings"
 )
 
-func encodeValues(buffer *Buffer, values url.Values, opts ...Option) []byte {
+type Encoder interface {
+	EncodeValues(buffer *Buffer, values url.Values, opt *SignOption) ([]byte, error)
+
+	EncodeBytes(buffer *Buffer, values []byte, opt *SignOption) ([]byte, error)
+}
+
+type DefaultEncoder struct {
+}
+
+// EncodeValues
+// 1、将参数名进行升序排序
+// 2、将排序后的参数名及参数名使用等号进行连接，例如：a=10
+// 3、将组合之后的参数使用&号进行连接，例如：a=10&b=20&c=30&c=31
+// 4、把拼接好的字符串进行相应运算
+func (this *DefaultEncoder) EncodeValues(buffer *Buffer, values url.Values, opt *SignOption) ([]byte, error) {
 	if values == nil {
-		return nil
+		return nil, nil
 	}
 
-	for _, opt := range opts {
-		if opt != nil {
-			opt(buffer)
-		}
-	}
-
-	buffer.WriteString(buffer.prefix)
+	buffer.WriteString(opt.Prefix)
 
 	keys := make([]string, 0, len(values))
 	for key := range values {
@@ -40,27 +48,21 @@ func encodeValues(buffer *Buffer, values url.Values, opts ...Option) []byte {
 		}
 	}
 
-	buffer.WriteString(buffer.suffix)
+	buffer.WriteString(opt.Suffix)
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
-func encodeBytes(buffer *Buffer, values []byte, opts ...Option) []byte {
+func (this *DefaultEncoder) EncodeBytes(buffer *Buffer, values []byte, opt *SignOption) ([]byte, error) {
 	if values == nil {
-		return nil
+		return nil, nil
 	}
 
-	for _, opt := range opts {
-		if opt != nil {
-			opt(buffer)
-		}
-	}
-
-	buffer.WriteString(buffer.prefix)
+	buffer.WriteString(opt.Prefix)
 
 	buffer.Write(values)
 
-	buffer.WriteString(buffer.suffix)
+	buffer.WriteString(opt.Suffix)
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
