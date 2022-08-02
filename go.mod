@@ -1,3 +1,3 @@
-module github.com/smartwalle/sign4go
+module github.com/smartwalle/nsign
 
 go 1.12
