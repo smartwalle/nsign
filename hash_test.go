@@ -12,7 +12,7 @@ import (
 )
 
 func BenchmarkHash_SignValues(b *testing.B) {
-	var h = nsign.NewSign(nsign.WithSigner(nsign.NewHashSigner(crypto.MD5)))
+	var h = nsign.NewSigner(nsign.WithMethod(nsign.NewHashMethod(crypto.MD5)))
 	for i := 0; i < b.N; i++ {
 		var form = make(url.Values, 0)
 		form.Set("c", "30")
@@ -23,7 +23,7 @@ func BenchmarkHash_SignValues(b *testing.B) {
 }
 
 func TestHash_SignBytes(t *testing.T) {
-	var h = nsign.NewSign(nsign.WithSigner(nsign.NewHashSigner(crypto.SHA1)))
+	var h = nsign.NewSigner(nsign.WithMethod(nsign.NewHashMethod(crypto.SHA1)))
 	var src = "jsapi_ticket=sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg&noncestr=Wm3WZYTPz0wzccnW&timestamp=1414587457&url=http://mp.weixin.qq.com?params=value"
 	var rb, err = h.SignBytes([]byte(src))
 	if err != nil {
@@ -36,7 +36,7 @@ func TestHash_SignBytes(t *testing.T) {
 }
 
 func TestHash_VerifyBytes(t *testing.T) {
-	var h = nsign.NewSign(nsign.WithSigner(nsign.NewHashSigner(crypto.SHA1)))
+	var h = nsign.NewSigner(nsign.WithMethod(nsign.NewHashMethod(crypto.SHA1)))
 	var src = "jsapi_ticket=sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg&noncestr=Wm3WZYTPz0wzccnW&timestamp=1414587457&url=http://mp.weixin.qq.com?params=value"
 
 	var sb, _ = hex.DecodeString("0f9de62fce790f9a083d5c99e95740ceb90c27ed")
@@ -47,7 +47,7 @@ func TestHash_VerifyBytes(t *testing.T) {
 }
 
 func TestHash_SignValues(t *testing.T) {
-	var h = nsign.NewSign(nsign.WithSigner(nsign.NewHashSigner(crypto.SHA1)))
+	var h = nsign.NewSigner(nsign.WithMethod(nsign.NewHashMethod(crypto.SHA1)))
 	var p = url.Values{}
 	p.Add("jsapi_ticket", "sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg")
 	p.Add("noncestr", "Wm3WZYTPz0wzccnW")
@@ -66,7 +66,7 @@ func TestHash_SignValues(t *testing.T) {
 }
 
 func TestHash_VerifyValues(t *testing.T) {
-	var h = nsign.NewSign(nsign.WithSigner(nsign.NewHashSigner(crypto.SHA1)))
+	var h = nsign.NewSigner(nsign.WithMethod(nsign.NewHashMethod(crypto.SHA1)))
 	var p = url.Values{}
 	p.Add("jsapi_ticket", "sM4AOVdWfPE4DxkXGEs8VMCPGGVi4C3VM0P37wVUCFvkVAy_90u5h9nbSlYy3-Sl-HhTdfl2fzFy1AOcHKP7qg")
 	p.Add("noncestr", "Wm3WZYTPz0wzccnW")

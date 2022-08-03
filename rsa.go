@@ -6,21 +6,21 @@ import (
 	"crypto/rsa"
 )
 
-type RSASigner struct {
+type RSAMethod struct {
 	h          crypto.Hash
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
 }
 
-func NewRSASigner(h crypto.Hash, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) *RSASigner {
-	var nRSA = &RSASigner{}
+func NewRSAMethod(h crypto.Hash, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) *RSAMethod {
+	var nRSA = &RSAMethod{}
 	nRSA.h = h
 	nRSA.privateKey = privateKey
 	nRSA.publicKey = publicKey
 	return nRSA
 }
 
-func (this *RSASigner) Sign(values []byte) ([]byte, error) {
+func (this *RSAMethod) Sign(values []byte) ([]byte, error) {
 	var h = this.h.New()
 	if _, err := h.Write(values); err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (this *RSASigner) Sign(values []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, this.privateKey, this.h, hashed)
 }
 
-func (this *RSASigner) Verify(values []byte, sign []byte) bool {
+func (this *RSAMethod) Verify(values []byte, sign []byte) bool {
 	var h = this.h.New()
 	if _, err := h.Write(values); err != nil {
 		return false

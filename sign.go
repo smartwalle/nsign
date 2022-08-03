@@ -7,23 +7,23 @@ import (
 	"sync"
 )
 
-type Option func(sign *Sign)
+type Option func(signer *Signer)
 
-func WithSigner(signer Signer) Option {
-	return func(sign *Sign) {
-		if signer == nil {
+func WithMethod(method Method) Option {
+	return func(signer *Signer) {
+		if method == nil {
 			return
 		}
-		sign.signer = signer
+		signer.method = method
 	}
 }
 
 func WithEncoder(encoder Encoder) Option {
-	return func(sign *Sign) {
+	return func(signer *Signer) {
 		if encoder == nil {
 			return
 		}
-		sign.encoder = encoder
+		signer.encoder = encoder
 	}
 }
 
@@ -46,26 +46,26 @@ func WithSuffix(s string) SignOptionFunc {
 	}
 }
 
-type Signer interface {
+type Method interface {
 	Sign(values []byte) ([]byte, error)
 
 	Verify(values []byte, sign []byte) bool
 }
 
-type Sign struct {
+type Signer struct {
 	pool    *sync.Pool
-	signer  Signer
+	method  Method
 	encoder Encoder
 }
 
-func NewSign(opts ...Option) *Sign {
-	var s = &Sign{}
+func NewSigner(opts ...Option) *Signer {
+	var s = &Signer{}
 	s.pool = &sync.Pool{
 		New: func() interface{} {
 			return bytes.NewBufferString("")
 		},
 	}
-	s.signer = NewHashSigner(crypto.MD5)
+	s.method = NewHashMethod(crypto.MD5)
 	s.encoder = &DefaultEncoder{}
 
 	for _, opt := range opts {
@@ -76,20 +76,20 @@ func NewSign(opts ...Option) *Sign {
 	return s
 }
 
-func (this *Sign) getBuffer() *bytes.Buffer {
+func (this *Signer) getBuffer() *bytes.Buffer {
 	var buffer = this.pool.Get().(*bytes.Buffer)
 	buffer.Reset()
 	return buffer
 }
 
-func (this *Sign) putBuffer(buffer *bytes.Buffer) {
+func (this *Signer) putBuffer(buffer *bytes.Buffer) {
 	if buffer != nil {
 		buffer.Reset()
 		this.pool.Put(buffer)
 	}
 }
 
-func (this *Sign) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte, error) {
+func (this *Signer) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -104,10 +104,10 @@ func (this *Sign) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	return this.signer.Sign(src)
+	return this.method.Sign(src)
 }
 
-func (this *Sign) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, error) {
+func (this *Signer) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -122,10 +122,10 @@ func (this *Sign) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
-	return this.signer.Sign(src)
+	return this.method.Sign(src)
 }
 
-func (this *Sign) VerifyValues(values url.Values, sign []byte, opts ...SignOptionFunc) bool {
+func (this *Signer) VerifyValues(values url.Values, sign []byte, opts ...SignOptionFunc) bool {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -140,10 +140,10 @@ func (this *Sign) VerifyValues(values url.Values, sign []byte, opts ...SignOptio
 	if err != nil {
 		return false
 	}
-	return this.signer.Verify(src, sign)
+	return this.method.Verify(src, sign)
 }
 
-func (this *Sign) VerifyBytes(values []byte, sign []byte, opts ...SignOptionFunc) bool {
+func (this *Signer) VerifyBytes(values []byte, sign []byte, opts ...SignOptionFunc) bool {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -158,5 +158,5 @@ func (this *Sign) VerifyBytes(values []byte, sign []byte, opts ...SignOptionFunc
 	if err != nil {
 		return false
 	}
-	return this.signer.Verify(src, sign)
+	return this.method.Verify(src, sign)
 }

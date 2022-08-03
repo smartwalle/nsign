@@ -5,17 +5,17 @@ import (
 	"crypto"
 )
 
-type HashSigner struct {
+type HashMethod struct {
 	h crypto.Hash
 }
 
-func NewHashSigner(h crypto.Hash) *HashSigner {
-	var nHash = &HashSigner{}
+func NewHashMethod(h crypto.Hash) *HashMethod {
+	var nHash = &HashMethod{}
 	nHash.h = h
 	return nHash
 }
 
-func (this *HashSigner) Sign(values []byte) ([]byte, error) {
+func (this *HashMethod) Sign(values []byte) ([]byte, error) {
 	var h = this.h.New()
 	if _, err := h.Write(values); err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func (this *HashSigner) Sign(values []byte) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func (this *HashSigner) Verify(values []byte, sign []byte) bool {
+func (this *HashMethod) Verify(values []byte, sign []byte) bool {
 	var h = this.h.New()
 	if _, err := h.Write(values); err != nil {
 		return false
