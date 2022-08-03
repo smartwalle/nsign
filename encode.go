@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"net/url"
 	"sort"
-	"strings"
 )
 
 type Encoder interface {
@@ -39,9 +38,6 @@ func (this *DefaultEncoder) EncodeValues(buffer *bytes.Buffer, values url.Values
 	for index, key := range keys {
 		vs := values[key]
 		for _, v := range vs {
-			if v = strings.TrimSpace(v); v == "" {
-				continue
-			}
 			if index != 0 {
 				buffer.WriteByte('&')
 			}
