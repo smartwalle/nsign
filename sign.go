@@ -1,8 +1,10 @@
 package nsign
 
 import (
+	"bytes"
 	"crypto"
 	"net/url"
+	"sync"
 )
 
 type Option func(sign *Sign)
@@ -51,14 +53,18 @@ type Signer interface {
 }
 
 type Sign struct {
-	*BufferPool
+	pool    *sync.Pool
 	signer  Signer
 	encoder Encoder
 }
 
 func NewSign(opts ...Option) *Sign {
 	var s = &Sign{}
-	s.BufferPool = NewBufferPool()
+	s.pool = &sync.Pool{
+		New: func() interface{} {
+			return bytes.NewBufferString("")
+		},
+	}
 	s.signer = NewHashSigner(crypto.MD5)
 	s.encoder = &DefaultEncoder{}
 
@@ -70,9 +76,22 @@ func NewSign(opts ...Option) *Sign {
 	return s
 }
 
+func (this *Sign) getBuffer() *bytes.Buffer {
+	var buffer = this.pool.Get().(*bytes.Buffer)
+	buffer.Reset()
+	return buffer
+}
+
+func (this *Sign) putBuffer(buffer *bytes.Buffer) {
+	if buffer != nil {
+		buffer.Reset()
+		this.pool.Put(buffer)
+	}
+}
+
 func (this *Sign) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte, error) {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
+	var buffer = this.getBuffer()
+	defer this.putBuffer(buffer)
 
 	var nOption = &SignOption{}
 	for _, opt := range opts {
@@ -89,8 +108,8 @@ func (this *Sign) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte,
 }
 
 func (this *Sign) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, error) {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
+	var buffer = this.getBuffer()
+	defer this.putBuffer(buffer)
 
 	var nOption = &SignOption{}
 	for _, opt := range opts {
@@ -107,8 +126,8 @@ func (this *Sign) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, erro
 }
 
 func (this *Sign) VerifyValues(values url.Values, sign []byte, opts ...SignOptionFunc) bool {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
+	var buffer = this.getBuffer()
+	defer this.putBuffer(buffer)
 
 	var nOption = &SignOption{}
 	for _, opt := range opts {
@@ -125,8 +144,8 @@ func (this *Sign) VerifyValues(values url.Values, sign []byte, opts ...SignOptio
 }
 
 func (this *Sign) VerifyBytes(values []byte, sign []byte, opts ...SignOptionFunc) bool {
-	var buffer = this.GetBuffer()
-	defer buffer.Release()
+	var buffer = this.getBuffer()
+	defer this.putBuffer(buffer)
 
 	var nOption = &SignOption{}
 	for _, opt := range opts {

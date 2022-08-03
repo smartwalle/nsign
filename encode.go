@@ -1,15 +1,16 @@
 package nsign
 
 import (
+	"bytes"
 	"net/url"
 	"sort"
 	"strings"
 )
 
 type Encoder interface {
-	EncodeValues(buffer *Buffer, values url.Values, opt *SignOption) ([]byte, error)
+	EncodeValues(buffer *bytes.Buffer, values url.Values, opt *SignOption) ([]byte, error)
 
-	EncodeBytes(buffer *Buffer, values []byte, opt *SignOption) ([]byte, error)
+	EncodeBytes(buffer *bytes.Buffer, values []byte, opt *SignOption) ([]byte, error)
 }
 
 type DefaultEncoder struct {
@@ -20,12 +21,14 @@ type DefaultEncoder struct {
 // 2、将排序后的参数名及参数名使用等号进行连接，例如：a=10
 // 3、将组合之后的参数使用&号进行连接，例如：a=10&b=20&c=30&c=31
 // 4、把拼接好的字符串进行相应运算
-func (this *DefaultEncoder) EncodeValues(buffer *Buffer, values url.Values, opt *SignOption) ([]byte, error) {
+func (this *DefaultEncoder) EncodeValues(buffer *bytes.Buffer, values url.Values, opt *SignOption) ([]byte, error) {
 	if values == nil {
 		return nil, nil
 	}
 
-	buffer.WriteString(opt.Prefix)
+	if opt.Prefix != "" {
+		buffer.WriteString(opt.Prefix)
+	}
 
 	keys := make([]string, 0, len(values))
 	for key := range values {
@@ -48,21 +51,27 @@ func (this *DefaultEncoder) EncodeValues(buffer *Buffer, values url.Values, opt 
 		}
 	}
 
-	buffer.WriteString(opt.Suffix)
+	if opt.Suffix != "" {
+		buffer.WriteString(opt.Suffix)
+	}
 
 	return buffer.Bytes(), nil
 }
 
-func (this *DefaultEncoder) EncodeBytes(buffer *Buffer, values []byte, opt *SignOption) ([]byte, error) {
+func (this *DefaultEncoder) EncodeBytes(buffer *bytes.Buffer, values []byte, opt *SignOption) ([]byte, error) {
 	if values == nil {
 		return nil, nil
 	}
 
-	buffer.WriteString(opt.Prefix)
+	if opt.Prefix != "" {
+		buffer.WriteString(opt.Prefix)
+	}
 
 	buffer.Write(values)
 
-	buffer.WriteString(opt.Suffix)
+	if opt.Suffix != "" {
+		buffer.WriteString(opt.Suffix)
+	}
 
 	return buffer.Bytes(), nil
 }
