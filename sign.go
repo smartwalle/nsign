@@ -27,21 +27,21 @@ func WithEncoder(encoder Encoder) Option {
 	}
 }
 
-type SignOptionFunc func(opt *SignOption)
+type SignOption func(opt *SignOptions)
 
-type SignOption struct {
+type SignOptions struct {
 	Prefix string
 	Suffix string
 }
 
-func WithPrefix(s string) SignOptionFunc {
-	return func(opt *SignOption) {
+func WithPrefix(s string) SignOption {
+	return func(opt *SignOptions) {
 		opt.Prefix = s
 	}
 }
 
-func WithSuffix(s string) SignOptionFunc {
-	return func(opt *SignOption) {
+func WithSuffix(s string) SignOption {
+	return func(opt *SignOptions) {
 		opt.Suffix = s
 	}
 }
@@ -89,72 +89,72 @@ func (this *Signer) putBuffer(buffer *bytes.Buffer) {
 	}
 }
 
-func (this *Signer) SignValues(values url.Values, opts ...SignOptionFunc) ([]byte, error) {
+func (this *Signer) SignValues(values url.Values, opts ...SignOption) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
-	var nOption = &SignOption{}
+	var nOptions = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOption)
+			opt(nOptions)
 		}
 	}
 
-	var src, err = this.encoder.EncodeValues(buffer, values, nOption)
+	var src, err = this.encoder.EncodeValues(buffer, values, nOptions)
 	if err != nil {
 		return nil, err
 	}
 	return this.method.Sign(src)
 }
 
-func (this *Signer) SignBytes(values []byte, opts ...SignOptionFunc) ([]byte, error) {
+func (this *Signer) SignBytes(values []byte, opts ...SignOption) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
-	var nOption = &SignOption{}
+	var nOptions = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOption)
+			opt(nOptions)
 		}
 	}
 
-	var src, err = this.encoder.EncodeBytes(buffer, values, nOption)
+	var src, err = this.encoder.EncodeBytes(buffer, values, nOptions)
 	if err != nil {
 		return nil, err
 	}
 	return this.method.Sign(src)
 }
 
-func (this *Signer) VerifyValues(values url.Values, sign []byte, opts ...SignOptionFunc) bool {
+func (this *Signer) VerifyValues(values url.Values, sign []byte, opts ...SignOption) bool {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
-	var nOption = &SignOption{}
+	var nOptions = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOption)
+			opt(nOptions)
 		}
 	}
 
-	var src, err = this.encoder.EncodeValues(buffer, values, nOption)
+	var src, err = this.encoder.EncodeValues(buffer, values, nOptions)
 	if err != nil {
 		return false
 	}
 	return this.method.Verify(src, sign)
 }
 
-func (this *Signer) VerifyBytes(values []byte, sign []byte, opts ...SignOptionFunc) bool {
+func (this *Signer) VerifyBytes(values []byte, sign []byte, opts ...SignOption) bool {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
-	var nOption = &SignOption{}
+	var nOptions = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOption)
+			opt(nOptions)
 		}
 	}
 
-	var src, err = this.encoder.EncodeBytes(buffer, values, nOption)
+	var src, err = this.encoder.EncodeBytes(buffer, values, nOptions)
 	if err != nil {
 		return false
 	}
