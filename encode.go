@@ -37,6 +37,7 @@ func (this *DefaultEncoder) EncodeValues(buffer *bytes.Buffer, values url.Values
 
 	for index, key := range keys {
 		vs := values[key]
+		sort.Strings(vs)
 		for _, v := range vs {
 			if index != 0 {
 				buffer.WriteByte('&')
