@@ -3,9 +3,12 @@ package nsign
 import (
 	"bytes"
 	"crypto"
+	"errors"
 	"net/url"
 	"sync"
 )
+
+var ErrVerification = errors.New("verification error")
 
 type Option func(signer *Signer)
 
@@ -47,9 +50,9 @@ func WithSuffix(s string) SignOption {
 }
 
 type Method interface {
-	Sign(values []byte) ([]byte, error)
+	Sign(data []byte) ([]byte, error)
 
-	Verify(values []byte, sign []byte) bool
+	Verify(data []byte, signature []byte) (bool, error)
 }
 
 type Signer struct {
@@ -107,7 +110,7 @@ func (this *Signer) SignValues(values url.Values, opts ...SignOption) ([]byte, e
 	return this.method.Sign(src)
 }
 
-func (this *Signer) SignBytes(values []byte, opts ...SignOption) ([]byte, error) {
+func (this *Signer) SignBytes(data []byte, opts ...SignOption) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -118,14 +121,14 @@ func (this *Signer) SignBytes(values []byte, opts ...SignOption) ([]byte, error)
 		}
 	}
 
-	var src, err = this.encoder.EncodeBytes(buffer, values, nOptions)
+	var src, err = this.encoder.EncodeBytes(buffer, data, nOptions)
 	if err != nil {
 		return nil, err
 	}
 	return this.method.Sign(src)
 }
 
-func (this *Signer) VerifyValues(values url.Values, sign []byte, opts ...SignOption) bool {
+func (this *Signer) VerifyValues(values url.Values, signature []byte, opts ...SignOption) (bool, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -138,12 +141,12 @@ func (this *Signer) VerifyValues(values url.Values, sign []byte, opts ...SignOpt
 
 	var src, err = this.encoder.EncodeValues(buffer, values, nOptions)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return this.method.Verify(src, sign)
+	return this.method.Verify(src, signature)
 }
 
-func (this *Signer) VerifyBytes(values []byte, sign []byte, opts ...SignOption) bool {
+func (this *Signer) VerifyBytes(data []byte, signature []byte, opts ...SignOption) (bool, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -154,9 +157,9 @@ func (this *Signer) VerifyBytes(values []byte, sign []byte, opts ...SignOption) 
 		}
 	}
 
-	var src, err = this.encoder.EncodeBytes(buffer, values, nOptions)
+	var src, err = this.encoder.EncodeBytes(buffer, data, nOptions)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return this.method.Verify(src, sign)
+	return this.method.Verify(src, signature)
 }

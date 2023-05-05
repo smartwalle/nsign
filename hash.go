@@ -15,22 +15,22 @@ func NewHashMethod(h crypto.Hash) *HashMethod {
 	return nHash
 }
 
-func (this *HashMethod) Sign(values []byte) ([]byte, error) {
+func (this *HashMethod) Sign(data []byte) ([]byte, error) {
 	var h = this.h.New()
-	if _, err := h.Write(values); err != nil {
+	if _, err := h.Write(data); err != nil {
 		return nil, err
 	}
 	return h.Sum(nil), nil
 }
 
-func (this *HashMethod) Verify(values []byte, sign []byte) bool {
+func (this *HashMethod) Verify(data []byte, signature []byte) (bool, error) {
 	var h = this.h.New()
-	if _, err := h.Write(values); err != nil {
-		return false
+	if _, err := h.Write(data); err != nil {
+		return false, err
 	}
-	nSign := h.Sum(nil)
-	if bytes.Compare(nSign, sign) == 0 {
-		return true
+	var hashed = h.Sum(nil)
+	if bytes.Compare(hashed, signature) == 0 {
+		return true, nil
 	}
-	return false
+	return false, ErrVerification
 }

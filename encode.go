@@ -10,7 +10,7 @@ import (
 type Encoder interface {
 	EncodeValues(buffer *bytes.Buffer, values url.Values, opts *SignOptions) ([]byte, error)
 
-	EncodeBytes(buffer *bytes.Buffer, values []byte, opts *SignOptions) ([]byte, error)
+	EncodeBytes(buffer *bytes.Buffer, data []byte, opts *SignOptions) ([]byte, error)
 }
 
 type DefaultEncoder struct {
@@ -52,8 +52,8 @@ func (this *DefaultEncoder) EncodeValues(buffer *bytes.Buffer, values url.Values
 	return buffer.Bytes(), nil
 }
 
-func (this *DefaultEncoder) EncodeBytes(buffer *bytes.Buffer, values []byte, opts *SignOptions) ([]byte, error) {
-	if values == nil {
+func (this *DefaultEncoder) EncodeBytes(buffer *bytes.Buffer, data []byte, opts *SignOptions) ([]byte, error) {
+	if data == nil {
 		return nil, nil
 	}
 
@@ -61,7 +61,7 @@ func (this *DefaultEncoder) EncodeBytes(buffer *bytes.Buffer, values []byte, opt
 		buffer.WriteString(opts.Prefix)
 	}
 
-	buffer.Write(values)
+	buffer.Write(data)
 
 	if opts.Suffix != "" {
 		buffer.WriteString(opts.Suffix)

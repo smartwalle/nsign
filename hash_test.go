@@ -41,7 +41,7 @@ func TestHash_VerifyBytes(t *testing.T) {
 
 	var sb, _ = hex.DecodeString("0f9de62fce790f9a083d5c99e95740ceb90c27ed")
 
-	if h.VerifyBytes([]byte(src), sb) == false {
+	if ok, _ := h.VerifyBytes([]byte(src), sb); !ok {
 		t.Fatal("sha1 验签错误")
 	}
 }
@@ -75,7 +75,7 @@ func TestHash_VerifyValues(t *testing.T) {
 
 	var sb, _ = hex.DecodeString("0f9de62fce790f9a083d5c99e95740ceb90c27ed")
 
-	if h.VerifyValues(p, sb) == false {
+	if ok, _ := h.VerifyValues(p, sb); !ok {
 		t.Fatal("sha1 验签错误")
 	}
 }
