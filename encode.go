@@ -31,6 +31,10 @@ func (this *DefaultEncoder) EncodeValues(buffer *bytes.Buffer, values url.Values
 
 	var pairs = make([]string, 0, len(values))
 	for key := range values {
+		if _, ok := opts.Ignores[key]; ok {
+			continue
+		}
+
 		var nValues = values[key]
 		for _, value := range nValues {
 			var nValue = strings.TrimSpace(value)

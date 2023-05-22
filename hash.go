@@ -23,14 +23,14 @@ func (this *HashMethod) Sign(data []byte) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func (this *HashMethod) Verify(data []byte, signature []byte) (bool, error) {
+func (this *HashMethod) Verify(data []byte, signature []byte) error {
 	var h = this.h.New()
 	if _, err := h.Write(data); err != nil {
-		return false, err
+		return err
 	}
 	var hashed = h.Sum(nil)
 	if bytes.Compare(hashed, signature) == 0 {
-		return true, nil
+		return nil
 	}
-	return false, ErrVerification
+	return ErrVerification
 }

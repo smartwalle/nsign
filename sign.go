@@ -10,10 +10,10 @@ import (
 
 var ErrVerification = errors.New("verification error")
 
-type Option func(signer *Signer)
+type Option func(signer *signer)
 
 func WithMethod(method Method) Option {
-	return func(signer *Signer) {
+	return func(signer *signer) {
 		if method == nil {
 			return
 		}
@@ -22,7 +22,7 @@ func WithMethod(method Method) Option {
 }
 
 func WithEncoder(encoder Encoder) Option {
-	return func(signer *Signer) {
+	return func(signer *signer) {
 		if encoder == nil {
 			return
 		}
@@ -33,8 +33,9 @@ func WithEncoder(encoder Encoder) Option {
 type SignOption func(opt *SignOptions)
 
 type SignOptions struct {
-	Prefix string
-	Suffix string
+	Prefix  string
+	Suffix  string
+	Ignores map[string]struct{}
 }
 
 func WithPrefix(s string) SignOption {
@@ -49,20 +50,43 @@ func WithSuffix(s string) SignOption {
 	}
 }
 
+func WithIgnore(keys ...string) SignOption {
+	return func(opt *SignOptions) {
+		if len(keys) > 0 && opt.Ignores == nil {
+			opt.Ignores = make(map[string]struct{})
+		}
+		for _, key := range keys {
+			if len(key) > 0 {
+				opt.Ignores[key] = struct{}{}
+			}
+		}
+	}
+}
+
 type Method interface {
 	Sign(data []byte) ([]byte, error)
 
-	Verify(data []byte, signature []byte) (bool, error)
+	Verify(data []byte, signature []byte) error
 }
 
-type Signer struct {
+type Signer interface {
+	SignValues(values url.Values, opts ...SignOption) ([]byte, error)
+
+	SignBytes(data []byte, opts ...SignOption) ([]byte, error)
+
+	VerifyValues(values url.Values, signature []byte, opts ...SignOption) error
+
+	VerifyBytes(data []byte, signature []byte, opts ...SignOption) error
+}
+
+type signer struct {
 	pool    *sync.Pool
 	method  Method
 	encoder Encoder
 }
 
-func NewSigner(opts ...Option) *Signer {
-	var s = &Signer{}
+func New(opts ...Option) Signer {
+	var s = &signer{}
 	s.pool = &sync.Pool{
 		New: func() interface{} {
 			return bytes.NewBufferString("")
@@ -79,20 +103,20 @@ func NewSigner(opts ...Option) *Signer {
 	return s
 }
 
-func (this *Signer) getBuffer() *bytes.Buffer {
+func (this *signer) getBuffer() *bytes.Buffer {
 	var buffer = this.pool.Get().(*bytes.Buffer)
 	buffer.Reset()
 	return buffer
 }
 
-func (this *Signer) putBuffer(buffer *bytes.Buffer) {
+func (this *signer) putBuffer(buffer *bytes.Buffer) {
 	if buffer != nil {
 		buffer.Reset()
 		this.pool.Put(buffer)
 	}
 }
 
-func (this *Signer) SignValues(values url.Values, opts ...SignOption) ([]byte, error) {
+func (this *signer) SignValues(values url.Values, opts ...SignOption) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -110,7 +134,7 @@ func (this *Signer) SignValues(values url.Values, opts ...SignOption) ([]byte, e
 	return this.method.Sign(src)
 }
 
-func (this *Signer) SignBytes(data []byte, opts ...SignOption) ([]byte, error) {
+func (this *signer) SignBytes(data []byte, opts ...SignOption) ([]byte, error) {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -128,7 +152,7 @@ func (this *Signer) SignBytes(data []byte, opts ...SignOption) ([]byte, error) {
 	return this.method.Sign(src)
 }
 
-func (this *Signer) VerifyValues(values url.Values, signature []byte, opts ...SignOption) (bool, error) {
+func (this *signer) VerifyValues(values url.Values, signature []byte, opts ...SignOption) error {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -141,12 +165,12 @@ func (this *Signer) VerifyValues(values url.Values, signature []byte, opts ...Si
 
 	var src, err = this.encoder.EncodeValues(buffer, values, nOptions)
 	if err != nil {
-		return false, err
+		return err
 	}
 	return this.method.Verify(src, signature)
 }
 
-func (this *Signer) VerifyBytes(data []byte, signature []byte, opts ...SignOption) (bool, error) {
+func (this *signer) VerifyBytes(data []byte, signature []byte, opts ...SignOption) error {
 	var buffer = this.getBuffer()
 	defer this.putBuffer(buffer)
 
@@ -159,7 +183,7 @@ func (this *Signer) VerifyBytes(data []byte, signature []byte, opts ...SignOptio
 
 	var src, err = this.encoder.EncodeBytes(buffer, data, nOptions)
 	if err != nil {
-		return false, err
+		return err
 	}
 	return this.method.Verify(src, signature)
 }

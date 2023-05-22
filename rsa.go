@@ -29,14 +29,14 @@ func (this *RSAMethod) Sign(data []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, this.privateKey, this.h, hashed)
 }
 
-func (this *RSAMethod) Verify(data []byte, signature []byte) (bool, error) {
+func (this *RSAMethod) Verify(data []byte, signature []byte) error {
 	var h = this.h.New()
 	if _, err := h.Write(data); err != nil {
-		return false, err
+		return err
 	}
 	var hashed = h.Sum(nil)
 	if err := rsa.VerifyPKCS1v15(this.publicKey, this.h, hashed, signature); err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
