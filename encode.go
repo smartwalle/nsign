@@ -32,12 +32,10 @@ func (this *DefaultEncoder) EncodeValues(buffer *bytes.Buffer, values url.Values
 	var pairs = make([]string, 0, len(values))
 	for key := range values {
 		var nValues = values[key]
-		if len(nValues) > 0 {
-			for _, value := range nValues {
-				var nValue = strings.TrimSpace(value)
-				if len(nValue) > 0 {
-					pairs = append(pairs, key+"="+nValue)
-				}
+		for _, value := range nValues {
+			var nValue = strings.TrimSpace(value)
+			if len(nValue) > 0 {
+				pairs = append(pairs, key+"="+nValue)
 			}
 		}
 	}
