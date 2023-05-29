@@ -35,8 +35,5 @@ func (this *RSAMethod) Verify(data []byte, signature []byte) error {
 		return err
 	}
 	var hashed = h.Sum(nil)
-	if err := rsa.VerifyPKCS1v15(this.publicKey, this.h, hashed, signature); err != nil {
-		return err
-	}
-	return nil
+	return rsa.VerifyPKCS1v15(this.publicKey, this.h, hashed, signature)
 }
