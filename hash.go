@@ -15,16 +15,16 @@ func NewHashMethod(h crypto.Hash) *HashMethod {
 	return nHash
 }
 
-func (this *HashMethod) Sign(data []byte) ([]byte, error) {
-	var h = this.h.New()
+func (method *HashMethod) Sign(data []byte) ([]byte, error) {
+	var h = method.h.New()
 	if _, err := h.Write(data); err != nil {
 		return nil, err
 	}
 	return h.Sum(nil), nil
 }
 
-func (this *HashMethod) Verify(data []byte, signature []byte) error {
-	var h = this.h.New()
+func (method *HashMethod) Verify(data []byte, signature []byte) error {
+	var h = method.h.New()
 	if _, err := h.Write(data); err != nil {
 		return err
 	}
