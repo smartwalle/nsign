@@ -30,7 +30,7 @@ func WithEncoder(encoder Encoder) Option {
 	}
 }
 
-type SignOption func(opt *SignOptions)
+type SignOption func(opts *SignOptions)
 
 type SignOptions struct {
 	Prefix  string
@@ -120,14 +120,14 @@ func (s *signer) SignValues(values url.Values, opts ...SignOption) ([]byte, erro
 	var buffer = s.getBuffer()
 	defer s.putBuffer(buffer)
 
-	var nOptions = &SignOptions{}
+	var nOpts = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOptions)
+			opt(nOpts)
 		}
 	}
 
-	var src, err = s.encoder.EncodeValues(buffer, values, nOptions)
+	var src, err = s.encoder.EncodeValues(buffer, values, nOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -138,14 +138,14 @@ func (s *signer) SignBytes(data []byte, opts ...SignOption) ([]byte, error) {
 	var buffer = s.getBuffer()
 	defer s.putBuffer(buffer)
 
-	var nOptions = &SignOptions{}
+	var nOpts = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOptions)
+			opt(nOpts)
 		}
 	}
 
-	var src, err = s.encoder.EncodeBytes(buffer, data, nOptions)
+	var src, err = s.encoder.EncodeBytes(buffer, data, nOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -156,14 +156,14 @@ func (s *signer) VerifyValues(values url.Values, signature []byte, opts ...SignO
 	var buffer = s.getBuffer()
 	defer s.putBuffer(buffer)
 
-	var nOptions = &SignOptions{}
+	var nOpts = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOptions)
+			opt(nOpts)
 		}
 	}
 
-	var src, err = s.encoder.EncodeValues(buffer, values, nOptions)
+	var src, err = s.encoder.EncodeValues(buffer, values, nOpts)
 	if err != nil {
 		return err
 	}
@@ -174,14 +174,14 @@ func (s *signer) VerifyBytes(data []byte, signature []byte, opts ...SignOption) 
 	var buffer = s.getBuffer()
 	defer s.putBuffer(buffer)
 
-	var nOptions = &SignOptions{}
+	var nOpts = &SignOptions{}
 	for _, opt := range opts {
 		if opt != nil {
-			opt(nOptions)
+			opt(nOpts)
 		}
 	}
 
-	var src, err = s.encoder.EncodeBytes(buffer, data, nOptions)
+	var src, err = s.encoder.EncodeBytes(buffer, data, nOpts)
 	if err != nil {
 		return err
 	}

@@ -20,20 +20,20 @@ func NewRSAMethod(h crypto.Hash, privateKey *rsa.PrivateKey, publicKey *rsa.Publ
 	return nRSA
 }
 
-func (method *RSAMethod) Sign(data []byte) ([]byte, error) {
-	var h = method.h.New()
+func (m *RSAMethod) Sign(data []byte) ([]byte, error) {
+	var h = m.h.New()
 	if _, err := h.Write(data); err != nil {
 		return nil, err
 	}
 	var hashed = h.Sum(nil)
-	return rsa.SignPKCS1v15(rand.Reader, method.privateKey, method.h, hashed)
+	return rsa.SignPKCS1v15(rand.Reader, m.privateKey, m.h, hashed)
 }
 
-func (method *RSAMethod) Verify(data []byte, signature []byte) error {
-	var h = method.h.New()
+func (m *RSAMethod) Verify(data []byte, signature []byte) error {
+	var h = m.h.New()
 	if _, err := h.Write(data); err != nil {
 		return err
 	}
 	var hashed = h.Sum(nil)
-	return rsa.VerifyPKCS1v15(method.publicKey, method.h, hashed, signature)
+	return rsa.VerifyPKCS1v15(m.publicKey, m.h, hashed, signature)
 }

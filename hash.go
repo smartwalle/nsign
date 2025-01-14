@@ -10,21 +10,21 @@ type HashMethod struct {
 }
 
 func NewHashMethod(h crypto.Hash) *HashMethod {
-	var nHash = &HashMethod{}
-	nHash.h = h
-	return nHash
+	var m = &HashMethod{}
+	m.h = h
+	return m
 }
 
-func (method *HashMethod) Sign(data []byte) ([]byte, error) {
-	var h = method.h.New()
+func (m *HashMethod) Sign(data []byte) ([]byte, error) {
+	var h = m.h.New()
 	if _, err := h.Write(data); err != nil {
 		return nil, err
 	}
 	return h.Sum(nil), nil
 }
 
-func (method *HashMethod) Verify(data []byte, signature []byte) error {
-	var h = method.h.New()
+func (m *HashMethod) Verify(data []byte, signature []byte) error {
+	var h = m.h.New()
 	if _, err := h.Write(data); err != nil {
 		return err
 	}
