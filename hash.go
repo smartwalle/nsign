@@ -6,17 +6,17 @@ import (
 )
 
 type HashMethod struct {
-	h crypto.Hash
+	hash crypto.Hash
 }
 
-func NewHashMethod(h crypto.Hash) *HashMethod {
+func NewHashMethod(hash crypto.Hash) *HashMethod {
 	var m = &HashMethod{}
-	m.h = h
+	m.hash = hash
 	return m
 }
 
 func (m *HashMethod) Sign(data []byte) ([]byte, error) {
-	var h = m.h.New()
+	var h = m.hash.New()
 	if _, err := h.Write(data); err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (m *HashMethod) Sign(data []byte) ([]byte, error) {
 }
 
 func (m *HashMethod) Verify(data []byte, signature []byte) error {
-	var h = m.h.New()
+	var h = m.hash.New()
 	if _, err := h.Write(data); err != nil {
 		return err
 	}
